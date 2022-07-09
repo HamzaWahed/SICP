@@ -50,11 +50,22 @@
 
 (define root1
   (lambda (a b c)
-    YOUR-CODE-HERE))
+    (let ([disc (- (square b) (* 4 a c))])
+      (if (error? disc)
+          (display "false value")
+          (/ (+ (* -1 b) (sqrt disc)) (* 2 a))))))
 
-(define root2
+(define root1
   (lambda (a b c)
-    YOUR-CODE-HERE))
+    (let ([disc (- (square b) (* 4 a c))])
+      (if (error? disc)
+          (display "false value")
+          (/ (- (* -1 b) (sqrt disc)) (* 2 a))))))
+
+(define (error? x)
+  (if (< x 0)
+      true
+      false))
 
 ;; complete these procedures and show some test cases
 
