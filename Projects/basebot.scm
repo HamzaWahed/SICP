@@ -153,8 +153,13 @@
 
 (define find-best-angle
   (lambda (velocity elevation)
-    YOUR-CODE-HERE))
-
+    (define (iter angle current max)
+      (let ([distance (travel-distance-simple velocity elevation angle)])
+        (cond (= angle (/ pi 2) max)
+              ((> distance max) (iter (+ angle alpha-increment) distance angle))
+              (else (iter (+ angle alpha-increment) current max)))))
+    (iter 0 0 0)))
+        
 ;; find best angle
 ;; try for other velocities
 ;; try for other heights
@@ -230,12 +235,27 @@
 
 (define integrate
   (lambda (x0 y0 u0 v0 dt g m beta)
-    YOUR-CODE-HERE))
+    (if (< y0 0)
+        x0
+        (integrate (+ x0 (* u0 dt))
+                   (+ y0 (* v0 dt))
+                   (- u0 (* (/ 1 m) beta (sqrt (+ (square u0) (square v0))) u0 dt))
+                   (- v0 (* (+ (* (/ 1 m) (sqrt (+ (square u0) (square v0))) v0 beta) g) dt))
+                   dt
+                   g
+                   m
+                   beta))))
 
 (define travel-distance
-  YOUR-CODE-HERE)
+  (lambda (elevation velocity angle)
+    (let ([alpha (degree2radian angle)])
+      (integrate 0 elevation (* velocity (cos alpha)) (* velocity (sin alpha))
+                 0.01 gravity mass beta))))
 
-
+(travel-distance 1 45 45) ;92.23
+(travel-distance 1 40 45) ;81.67
+(travel-distance 1 35 45) ;70.30
+          
 ;; RUN SOME TEST CASES
 
 ;; what about Denver?
