@@ -55,7 +55,7 @@
           (display "false value")
           (/ (+ (* -1 b) (sqrt disc)) (* 2 a))))))
 
-(define root1
+(define root2
   (lambda (a b c)
     (let ([disc (- (square b) (* 4 a c))])
       (if (error? disc)
@@ -64,8 +64,8 @@
 
 (define (error? x)
   (if (< x 0)
-      true
-      false))
+      #t
+      #f))
 
 ;; complete these procedures and show some test cases
 
@@ -93,7 +93,8 @@
 
 (define travel-distance-simple
   (lambda (elevation velocity angle)
-    YOUR-CODE-HERE))
+    (let ([alpha (degree2radian angle)])
+      (* velocity (cos alpha) (time-to-impact (* velocity (sin alpha)) elevation)))))
 
 ;; let's try this out for some example values.  Note that we are going to 
 ;; do everything in metric units, but for quaint reasons it is easier to think
@@ -121,9 +122,23 @@
 ;; at an angle of (/ pi 2) radians or 90 degrees (straight vertical)
 ;; at an angle of (/ pi 4) radians or 45 degrees
 
+(time-to-impact (* 45 (sin 0)) 1)        ;0.45s
+(time-to-impact (* 45 (sin (/ pi 2))) 1) ;9.21s
+(time-to-impact (* 45 (sin (/ pi 4))) 1) ;6.53s
+
 ;; what is the distance traveled in each case?
 ;; record both in meters and in feet
 
+(travel-distance-simple 1 45 0)  ;20.33m
+(travel-distance-simple 1 45 90) ;0.00055m
+(travel-distance-simple 1 45 45) ;207.63m
+
+(meters-to-feet
+ (travel-distance-simple 1 45 0))  ;67.1 feet
+(meters-to-feet
+ (travel-distance-simple 1 45 90)) ;0.0019 feet
+(meters-to-feet
+ (travel-distance-simple 1 45 45)) ;685.17 feet
 
 ;; Problem 5
 
