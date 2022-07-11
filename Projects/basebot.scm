@@ -267,14 +267,71 @@
 ;; use, given a velocity, in order to reach a given height (receiver) at a 
 ;; given distance
 
+(define integrate-time
+  (lambda (x0 y0 u0 v0 dt g m beta t)
+    (if (< y0 0) t
+        (integrate-time (+ x0 (* u0 dt))
+                        (+ y0 (* v0 dt))
+                        (- u0 (* (/ 1 m) beta (sqrt (+ (square u0) (square v0))) u0 dt))
+                        (- v0 (* (+ (* (/ 1 m) (sqrt (+ (square u0) (square v0))) v0 beta) g) dt))
+                        dt
+                        g
+                        m
+                        beta
+                        (+ t dt)))))
+
+(define travel-time
+  (lambda (elevation velocity angle)
+    (let ([alpha (degree2radian angle)])
+      (integrate-time 0 elevation (* velocity (cos alpha)) (* velocity (sin alpha))
+                      0.01 gravity mass beta 0))))
+
+(define new-angle-increment 0.1)
+
+(define find-best-angle-time
+  (lambda (velocity elevation target)
+    (define (desired? distance)
+      (< (abs (- distance target)) 0.5))
+    (define (iter angle current min)
+      (let ((distance (travel-distance elevation velocity angle)))
+        (cond ((> angle 90) current)
+              ((desired? distance)
+               (let ((time (travel-time elevation velocity angle)))
+                 (if (or (= current 0) (< time current))
+                     (iter (+ angle new-angle-increment) time angle)
+                     (iter (+ angle new-angle-increment) current min))))
+              (else (iter (+ angle new-angle-increment) current min)))))
+    (iter -90 0 0)))
 
 ;; a cather trying to throw someone out at second has to get it roughly 36 m
 ;; (or 120 ft) how quickly does the ball get there, if he throws at 55m/s,
 ;;  at 45m/s, at 35m/s?
 
+(find-best-angle-time 55 1 36) ;0.77
+(find-best-angle-time 45 1 36) ;0.95
+(find-best-angle-time 35 1 36) ;1.22
+
 ;; try out some times for distances (30, 60, 90 m) or (100, 200, 300 ft) 
 ;; using 45m/s
 
+(find-best-angle-time 45 1 30) ;0.76
+(find-best-angle-time 45 1 60) ;1.81
+(find-best-angle-time 45 1 90) ;3.63
+
 ;; Problem 8
 
+(define distance-with-drag
+  (lambda (elevation velocity angle bounces)
+    (define (iter bounces velocity sum)
+      (if (= bounces 0) sum
+          (iter (- bounces 1) (/ velocity 2)
+                (+ sum (travel-distance 0 (/ velocity 2) angle)))))
+    (iter bounces (/ velocity 2) (travel-distance elevation velocity angle))))
+
+(distance-with-drag 1 45 45 1) ;104.17
+(distance-with-drag 1 45 45 2) ;107.37
+(distance-with-drag 1 45 45 10) ;108.51
+
 ;; Problem 9
+
+
